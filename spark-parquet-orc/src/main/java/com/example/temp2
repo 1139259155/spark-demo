@@ -1,0 +1,47 @@
+import org.apache.spark.sql.SparkSession
+import org.codehaus.groovy.control.CompilerConfiguration
+import groovy.lang.GroovyShell
+
+object SparkGroovyIntegration {
+  def main(args: Array[String]): Unit = {
+    val spark = SparkSession.builder()
+      .appName("SparkGroovyIntegration")
+      .config("spark.master", "local") // 设置为你的集群配置
+      .getOrCreate()
+
+    import spark.implicits._
+
+    // 读取HDFS上的CSV文件
+    val csvFilePath = "hdfs://path/to/your/file.csv"
+    val df = spark.read.option("header", "true").csv(csvFilePath)
+
+    // 初始化Groovy Shell
+    val conf = new CompilerConfiguration()
+    val shell = new GroovyShell(conf)
+
+    // 加载Groovy脚本
+    val scriptText = """
+      class ProcessData {
+          static def processDataFrame(df) {
+              // 在这里添加你的Groovy代码来处理DataFrame
+              return df.withColumn("new_column", lit("processed"))
+          }
+      }
+    """
+
+    // 执行Groovy脚本
+    shell.evaluate(scriptText)
+
+    // 获取Groovy类
+    val processDataClass = shell.getClassLoader().loadClass("ProcessData")
+
+    // 调用Groovy方法处理DataFrame
+    val processedDf = processDataClass.getMethod("processDataFrame", classOf[org.apache.spark.sql.DataFrame]).invoke(null, df).asInstanceOf[org.apache.spark.sql.DataFrame]
+
+    // 显示结果
+    processedDf.show()
+
+    // 停止Spark Session
+    spark.stop()
+  }
+}
