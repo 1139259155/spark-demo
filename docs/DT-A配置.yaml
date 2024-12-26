@@ -1,0 +1,26 @@
+# DT-A/DT-T配置文件
+
+# DT-A：
+
+
+version: 1.0.0
+source:
+  path: /xxx/123.csv
+  filter:
+    condition: field1>3
+  schema:
+    head: true
+    自动推断: true  # 用于自定生成csv的全字段schema
+    指定部分列: [field1, field5, field6]  # 用于reader下推读取文件 csv不会有嵌套结构 ，如果通用kafka等json的嵌套结构如何处理
+target:
+  type: sqlite local
+  table: SYS_NE
+  Mapping: 
+    name: $field1
+    age: $field5+1  #avatit 动态表达式
+    sex: $field1
+  
+
+
+
+
