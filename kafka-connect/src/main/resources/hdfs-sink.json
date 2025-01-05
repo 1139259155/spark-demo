@@ -1,0 +1,20 @@
+{
+  "name": "hdfs-orders-sink",
+  "config": {
+    "connector.class": "io.confluent.connect.hdfs.HdfsSinkConnector",
+    "tasks.max": "1",
+    "topics": "orders-topic",
+    "hdfs.url": "hdfs://namenode:8020",
+    "flush.size": "100",
+    "rotate.interval.ms": "3600000",
+    "partitioner.class": "io.confluent.connect.hdfs.partitioner.FieldPartitioner",
+    "partition.field.name": "order_date",
+    "format.class": "io.confluent.connect.hdfs.parquet.ParquetFormat",
+    "schema.compatibility": "BACKWARD",
+    "transforms": "ExtractKey,ParseKey",
+    "transforms.ExtractKey.type": "org.apache.kafka.connect.transforms.ExtractField$Key",
+    "transforms.ExtractKey.field": "order_id",
+    "transforms.ParseKey.type": "org.apache.kafka.connect.transforms.Cast$Key",
+    "transforms.ParseKey.spec": "string"
+  }
+}
